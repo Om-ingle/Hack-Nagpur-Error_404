@@ -19,7 +19,7 @@ from db.visit_repo import (
 )
 from db.patient_repo import get_patient_by_phone
 
-# Page config
+# Page config with white mode and hospital colors
 st.set_page_config(
     page_title="AarogyaQueue - Doctor Portal",
     page_icon="👨‍⚕️",
@@ -27,193 +27,72 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Premium Custom CSS for Doctor Portal
+# Configure Streamlit theme for white mode with hospital colors
 st.markdown("""
 <style>
-    /* Import Google Fonts */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-    
-    /* Global Reset & Standards */
-    html, body, [class*="css"] {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        font-size: 16px;
+    /* Force strict white mode */
+    [data-testid="stAppViewContainer"],
+    [data-testid="stHeader"],
+    .main {
+        background-color: #FFFFFF !important;
     }
     
-    /* Hide Streamlit defaults */
+    /* Hide Streamlit branding */
     #MainMenu, footer, header {visibility: hidden;}
     .stDeployButton {display: none;}
     
-    /* App background - Clean solid color */
-    .stApp {
-        background: #F4F7F8;
+    /* Hospital color scheme for primary buttons */
+    .stButton > button[kind="primary"] {
+        background-color: #197CA7 !important;
+        color: white !important;
+        border: none !important;
     }
     
-    /* Sticky Header - Consistent styling */
+    .stButton > button[kind="primary"]:hover {
+        background-color: #15638a !important;
+    }
+    
+    /* Use green accent for success states */
+    div[data-baseweb="notification"] > div {
+        border-left-color: #95BD45 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Minimal CSS for custom elements only
+st.markdown("""
+<style>
+    /* Custom HTML components only - no Streamlit overrides */
     .sticky-header {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
         background: #FFFFFF;
         border-bottom: 1px solid #E5E7EB;
         padding: 1rem 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        z-index: 1000;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-    
-    .header-brand {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-    
-    .header-logo-icon {
-        font-size: 1.75rem;
     }
     
     .header-brand-text {
-        font-size: 1.25rem;
+        color: #197CA7;
         font-weight: 700;
-        color: #1F2937;
-    }
-    
-    /* Main Content Container */
-    .main-content {
-        margin-top: 90px;
-        max-width: 1400px;
-        margin-left: auto;
-        margin-right: auto;
-        padding: 2rem;
-    }
-    .doctor-info-header {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .doctor-name-header {
-        font-size: 1rem;
-        font-weight: 700;
-        color: #1F2937;
-    }
-    
-    .doctor-role-header {
-        font-size: 0.85rem;
-        color: #6B7280;
-        font-weight: 500;
     }
     
     .live-indicator {
-        background: #16A34A;
+        background: #95BD45;
         color: white;
         padding: 0.5rem 1.25rem;
         border-radius: 50px;
-        font-weight: 600;
-        font-size: 0.85rem;
-    }
-    
-    /* Dashboard Tabs */
-    .dashboard-tabs {
-        margin-bottom: 2rem;
-        max-width: 400px;
-    }
-    
-    /* Queue Panel Header */
-    .queue-panel-header {
-        background: #F4F7F8;
-        border-radius: 12px;
-        padding: 1rem 1.25rem;
-        margin-bottom: 1.5rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border: 1px solid #E5E7EB;
-    }
-    
-    .queue-title {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: #1F2937;
     }
     
     .queue-count {
-        background: #0E9F8A;
+        background: #197CA7;
         color: white;
         padding: 0.25rem 0.75rem;
         border-radius: 12px;
-        font-weight: 600;
-        font-size: 0.85rem;
-    }
-    
-    /* Doctor Header */
-    .doctor-header {
-        background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
-        color: white;
-        padding: 1.5rem 2rem;
-        border-radius: 20px;
-        margin-bottom: 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 10px 30px rgba(30, 58, 95, 0.25);
-    }
-    
-    .doctor-name {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: 0.25rem;
-    }
-    
-    .doctor-role {
-        opacity: 0.85;
-        font-size: 0.9rem;
-        font-weight: 500;
-    }
-    
-    .live-badge {
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        padding: 0.5rem 1.25rem;
-        border-radius: 50px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.7; }
-    }
-    
-    /* Patient Card */
-    .patient-card {
-        background: white;
-        padding: 2rem;
-        border-radius: 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        border-left: 5px solid #3b82f6;
-        margin-bottom: 1rem;
-    }
-    
-    .patient-name {
-        font-size: 1.4rem;
-        font-weight: 700;
-        color: #1e293b;
-        margin-bottom: 0.5rem;
     }
     
     .token-badge {
-        display: inline-block;
-        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        background: #197CA7;
         color: white;
         padding: 0.5rem 1rem;
         border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.9rem;
     }
     
     /* Queue Cards with Risk Colors */
@@ -321,7 +200,7 @@ st.markdown("""
     }
     
     .token-display-badge {
-        background: #0E9F8A;
+        background: #197CA7;
         color: white;
         padding: 0.5rem 1.25rem;
         border-radius: 8px;
@@ -434,8 +313,8 @@ st.markdown("""
     }
     
     .history-card:hover {
-        border-color: #0E9F8A;
-        box-shadow: 0 4px 12px rgba(14, 159, 138, 0.1);
+        border-color: #197CA7;
+        box-shadow: 0 4px 12px rgba(25, 124, 167, 0.1);
     }
     
     .history-card-header {
@@ -560,73 +439,6 @@ st.markdown("""
         color: #991B1B;
         font-weight: 600;
         text-align: center;
-    }
-    
-    /* Button Styling - Consistent across app */
-    .stButton > button {
-        border-radius: 8px !important;
-        font-weight: 600 !important;
-        padding: 0.625rem 1.25rem !important;
-        transition: all 0.2s ease !important;
-        font-size: 0.9rem !important;
-        border: none !important;
-    }
-    
-    .stButton > button[kind="primary"] {
-        background: #0E9F8A !important;
-        color: white !important;
-        box-shadow: 0 2px 8px rgba(14, 159, 138, 0.25) !important;
-    }
-    
-    .stButton > button[kind="primary"]:hover {
-        background: #0B7F6E !important;
-        box-shadow: 0 4px 12px rgba(14, 159, 138, 0.35) !important;
-        transform: translateY(-1px) !important;
-    }
-    
-    .stButton > button[kind="secondary"] {
-        background: #F4F7F8 !important;
-        color: #6B7280 !important;
-        border: 1px solid #E5E7EB !important;
-    }
-    
-    .stButton > button[kind="secondary"]:hover {
-        background: #E5E7EB !important;
-        color: #1F2937 !important;
-    }
-    
-    /* Input Styling - Consistent */
-    .stTextArea textarea, .stTextInput input {
-        border-radius: 8px !important;
-        border: 1px solid #E5E7EB !important;
-        padding: 0.625rem 1rem !important;
-        font-size: 0.9rem !important;
-    }
-    
-    .stTextArea textarea:focus, .stTextInput input:focus {
-        border-color: #0E9F8A !important;
-        box-shadow: 0 0 0 3px rgba(14, 159, 138, 0.1) !important;
-    }
-    
-    /* Select Box - Consistent */
-    .stSelectbox > div > div {
-        border-radius: 8px !important;
-        border: 1px solid #E5E7EB !important;
-    }
-    
-    /* Info/Success/Warning boxes */
-    .stAlert {
-        border-radius: 8px !important;
-        border: none !important;
-    }
-    
-    /* Expander - Consistent */
-    .streamlit-expanderHeader {
-        border-radius: 8px !important;
-        background: #F9FAFB !important;
-        border: 1px solid #E5E7EB !important;
-        font-weight: 600 !important;
-        font-size: 0.9rem !important;
     }
     
     /* Empty State */
