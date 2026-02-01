@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 # Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from ai.processing import transcribe_audio, extract_patient_data, extract_from_text
 from ai.summary import generate_doctor_summary
