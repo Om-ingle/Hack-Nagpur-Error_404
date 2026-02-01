@@ -1,6 +1,5 @@
 # 🏥 AarogyaQueue - AI-Powered Telemedicine Queue System
 
-**Hackathon:** CIH 3.0 (24-hour onsite)  
 **Team:** [Your Team Name]  
 **Problem:** Long waiting times and inefficient patient triage in clinics
 
@@ -120,16 +119,6 @@ python3 verify_database.py
 
 ---
 
-## 💡 Why This Wins
-
-✅ **Solves Real Problem** - Reduces clinic congestion  
-✅ **Reliable** - No cloud = no failures during demo  
-✅ **Scalable Design** - Clean architecture, easy to extend  
-✅ **ML-Powered** - Intelligent, not just CRUD  
-✅ **Demo-Ready** - One command to run everything  
-
----
-
 ## 📝 Future Enhancements
 
 - Multi-language support
@@ -139,4 +128,4 @@ python3 verify_database.py
 
 ---
 
-**Built with ❤️ for CIH 3.0**
+**Built with ❤️**

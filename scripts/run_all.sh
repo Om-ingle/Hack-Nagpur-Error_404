@@ -1,7 +1,6 @@
 #!/bin/bash
 ################################################################################
 # AarogyaQueue - One-Click Launcher
-# Hackathon: CIH 3.0
 # 
 # This script starts the complete telemedicine queue system:
 # - Patient Kiosk (Port 8501)
@@ -18,7 +17,6 @@ NC='\033[0m' # No Color
 
 echo -e "${BLUE}╔════════════════════════════════════════════╗${NC}"
 echo -e "${BLUE}║       🏥 AarogyaQueue System Launcher      ║${NC}"
-echo -e "${BLUE}║            CIH 3.0 Hackathon               ║${NC}"
 echo -e "${BLUE}╚════════════════════════════════════════════╝${NC}"
 echo ""
 
