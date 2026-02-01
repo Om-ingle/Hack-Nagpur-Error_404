@@ -1,6 +1,6 @@
 # 🏥 AarogyaQueue - AI-Powered Telemedicine Queue System
 
-**Team:** [Your Team Name]  
+**Team:** Error_404
 **Problem:** Long waiting times and inefficient patient triage in clinics
 
 ---
