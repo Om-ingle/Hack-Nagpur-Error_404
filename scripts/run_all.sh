@@ -2,9 +2,11 @@
 ################################################################################
 # AarogyaQueue - One-Click Launcher
 # 
-# This script starts the complete telemedicine queue system:
-# - Patient Kiosk (Port 8501)
-# - Doctor Dashboard (Port 8502)
+# This script:
+# 1. Sets up/migrates the database
+# 2. Creates all required tables
+# 3. Starts Patient Kiosk (Port 8501)
+# 4. Starts Doctor Dashboard (Port 8502)
 ################################################################################
 
 set -e  # Exit on error
@@ -13,6 +15,7 @@ set -e  # Exit on error
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
+RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}╔════════════════════════════════════════════╗${NC}"
@@ -28,17 +31,29 @@ cd "$PROJECT_DIR"
 echo -e "${YELLOW}📂 Project Directory: $PROJECT_DIR${NC}"
 echo ""
 
-# Activate virtual environment if exists
-if [ -d "venv" ]; then
-    echo -e "${GREEN}✓${NC} Activating virtual environment..."
+# Check for virtual environment (.venv or venv)
+if [ -d ".venv" ]; then
+    echo -e "${GREEN}✓${NC} Activating virtual environment (.venv)..."
+    source .venv/bin/activate
+elif [ -d "venv" ]; then
+    echo -e "${GREEN}✓${NC} Activating virtual environment (venv)..."
     source venv/bin/activate
 else
     echo -e "${YELLOW}⚠${NC} No virtual environment found. Using system Python."
 fi
 
-# Setup database (safe - creates tables if not exist)
-echo -e "${GREEN}✓${NC} Initializing database..."
-python3 scripts/setup_db.py 2>/dev/null || echo "  (Database already initialized)"
+# Get Python command
+PYTHON_CMD=$(which python3 2>/dev/null || which python 2>/dev/null || echo "python3")
+
+# Setup database (creates tables if not exist, migrates if needed)
+echo -e "${GREEN}🗄️  Setting up database...${NC}"
+$PYTHON_CMD scripts/setup_db.py
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}✓${NC} Database ready"
+else
+    echo -e "${RED}✗${NC} Database setup failed"
+    exit 1
+fi
 
 echo ""
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
@@ -47,10 +62,11 @@ echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 
 # Kill any existing Streamlit processes on these ports
+echo -e "${YELLOW}Cleaning up old processes...${NC}"
 lsof -ti:8501 | xargs kill -9 2>/dev/null || true
 lsof -ti:8502 | xargs kill -9 2>/dev/null || true
 
-sleep 1
+sleep 2
 
 # Start Patient Kiosk (Port 8501)
 echo -e "${GREEN}📱 Patient Kiosk${NC} starting on ${BLUE}http://localhost:8501${NC}"
@@ -59,7 +75,7 @@ streamlit run app/patient/app.py \
     --server.headless=true \
     --browser.gatherUsageStats=false \
     --server.fileWatcherType=none \
-    > /dev/null 2>&1 &
+    > logs/patient.log 2>&1 &
 PATIENT_PID=$!
 
 sleep 3
@@ -71,7 +87,7 @@ streamlit run app/doctor/app.py \
     --server.headless=true \
     --browser.gatherUsageStats=false \
     --server.fileWatcherType=none \
-    > /dev/null 2>&1 &
+    > logs/doctor.log 2>&1 &
 DOCTOR_PID=$!
 
 sleep 3
@@ -90,6 +106,10 @@ if ps -p $PATIENT_PID > /dev/null && ps -p $DOCTOR_PID > /dev/null; then
     echo -e "  Doctor Login: Role=${BLUE}SENIOR${NC}, PIN=${BLUE}1234${NC}"
     echo -e "  Doctor Login: Role=${BLUE}JUNIOR${NC}, PIN=${BLUE}5678${NC}"
     echo ""
+    echo -e "${YELLOW}📝 Logs saved to:${NC}"
+    echo -e "  logs/patient.log"
+    echo -e "  logs/doctor.log"
+    echo ""
     echo -e "${YELLOW}Press Ctrl+C to stop all services${NC}"
     echo ""
     
@@ -98,7 +118,10 @@ if ps -p $PATIENT_PID > /dev/null && ps -p $DOCTOR_PID > /dev/null; then
     wait
 else
     echo ""
-    echo -e "${YELLOW}⚠ Error: One or more services failed to start${NC}"
+    echo -e "${RED}⚠ Error: One or more services failed to start${NC}"
+    echo -e "${YELLOW}Check logs for details:${NC}"
+    echo -e "  logs/patient.log"
+    echo -e "  logs/doctor.log"
     kill $PATIENT_PID $DOCTOR_PID 2>/dev/null
     exit 1
 fi

@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 *.so
 .Python
+.*_cache
 
 # Virtual Environment
 venv/
@@ -40,3 +41,4 @@ Thumbs.db
 
 # Logs
 *.log
+logs/
